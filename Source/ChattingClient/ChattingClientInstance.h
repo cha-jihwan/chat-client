@@ -6,6 +6,7 @@
 #include "Kismet/BlueprintPlatformLibrary.h"
 #include "NetworkManager.h"
 #include "ChattingLobby.h"
+#include "ChattingRoom.h"
 #include "ChattingClientInstance.generated.h"
 
 /**
@@ -32,6 +33,8 @@ public:
 	static UChattingLobby*			GetLobby();
 	static UChattingLobby*			lobby;
 	static bool						initialized;
+	static UChattingRoom*			GetRoom();
+	static UChattingRoom*			room;
 
 private:
 	static NetworkManager*				netManager;

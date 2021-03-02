@@ -16,7 +16,8 @@
 
 // Sets default values
 NetworkManager::NetworkManager() 
-	: sock{ nullptr }, state{ ENMS_Initialized }//, sendBuffer{}, recvBuffer{}
+	: sock{ nullptr }
+	, netState{ ENMS_Initialized }, userState{ ENUS_None }//, sendBuffer{}, recvBuffer{}
 {
 	Initialize();
 }
@@ -28,7 +29,9 @@ bool NetworkManager::Initialize()
 	sock = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_Stream, TEXT("default"), false);
 	sock->SetNonBlocking(true);
 
-	state = ENMS_Connecting;
+	netState = ENMS_Connecting;
+	userState = ENUS_Login;
+
 	ABLOG(Warning, "ENMS_Connecting");
 
 	InitPacketHandler();
@@ -47,7 +50,7 @@ bool NetworkManager::Disconnect()
 
 	sock->Shutdown(ESocketShutdownMode::Read);
 	sock = nullptr;
-	state = ENMS_Disconnected;
+	netState = ENMS_Disconnected;
 
 	return true;
 }
@@ -60,7 +63,7 @@ void NetworkManager::OnBeginPlay() { }
 // Called every frame
 void NetworkManager::OnTick(float DeltaTime)
 {
-	switch (state)
+	switch (netState)
 	{
 		case ENMS_Initialized: // 연결 시도 전..
 			//ABLOG(Warning, "ENMS_Initialized"));
@@ -110,7 +113,7 @@ int64 NetworkManager::TryRecvPayload()
 	{
 		if (0 < receivedBytes)
 		{
-			ABLOG(Warning, "char text : %s %d", recvBuffer.get_write_buffer() - receivedBytes, receivedBytes);
+			ABLOG(Warning, "recved bytes : %d", receivedBytes);
 	
 			if (nullptr != UChattingClientInstance::GetLobby())
 			{
@@ -128,7 +131,7 @@ int64 NetworkManager::TryRecvPayload()
 		return receivedBytes;
 	}
 
-	state = ENMS_Disconnected;
+	netState = ENMS_Disconnected;
 	ABLOG(Warning, "ENMS_Disconnected");
 
 	return 0;
@@ -141,19 +144,19 @@ bool NetworkManager::TryConnect()
 	addr->SetIp(ip.Value);
 	addr->SetPort(5500);
 
-	if (ENMS_Connecting < state)
+	if (ENMS_Connecting < netState)
 	{
 		return false; // already disconneted.... or connected.....
 	}
-	if (ENMS_Connecting > state)
+	if (ENMS_Connecting > netState)
 	{
-		state = ENMS_Connecting;
+		netState = ENMS_Connecting;
 	}
 
 	bool connected = sock->Connect(*addr);
 	if (connected)
 	{
-		state = ENMS_Connected;
+		netState = ENMS_Connected;
 		ABLOG(Warning, "ENMS_Connected");
 		
 		return true;
@@ -205,20 +208,49 @@ void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
 	ABLOG(Warning, "LoginPacketHandler");
 	FString fstr1 = L"LevelLobby";
 	UChattingClientInstance::ChangeLevel(fstr1);
+
+
+
 }
 
 void NetworkManager::ChatPacketHandler(const std::wstring& cmd_w)
 {
+	// user state
 	FString fst(cmd_w.c_str(), cmd_w.size());
 
-	UChattingClientInstance::lobby->AddChatMsgInLobby(fst);
+	switch (UChattingClientInstance::GetNetManager()->GetUserState())
+	{
+	case ENetUserState::ENUS_Lobby:
+		UChattingClientInstance::lobby->AddChatMsgInLobby(fst);
+		break;
+	case ENetUserState::ENUS_Room:
+		UChattingClientInstance::room->AddChatMsgInRoom(fst);
+		break;
+
+	default:
+		ABLOG(Warning, "NetUserState %d  In ChatHandler", UChattingClientInstance::GetNetManager()->GetUserState())
+	}
 }
+
 	
 void NetworkManager::WhisperPacketHandler(const std::wstring& cmd_w)
 {
 	FString fstr(cmd_w.c_str(), cmd_w.size());
 
-	UChattingClientInstance::lobby->AddChatMsgInLobby(fstr);
+	UChattingClientInstance::GetNetManager()->GetUserState();
+
+	switch (UChattingClientInstance::GetNetManager()->GetUserState())
+	{
+	case ENetUserState::ENUS_Lobby: 
+		UChattingClientInstance::lobby->AddChatMsgInLobby(fstr);
+		break;
+	case ENetUserState::ENUS_Room: 
+		UChattingClientInstance::room->AddChatMsgInRoom(fstr);
+		break;
+
+	default:
+		ABLOG(Warning, "NetUserState %d  In Whisper",UChattingClientInstance::GetNetManager()->GetUserState())
+	}
 }
 
 void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmd_w)
@@ -254,7 +286,7 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 			return;
 		}
 
-		UChattingClientInstance::GetNetManager()->MoveReadHead(readSize);
+		UChattingClientInstance::GetNetManager()->MoveReadHeadAfterPeek(readSize);
 
 		ABLOG(Warning, "방 이름 : %ws", nextLine.c_str());
 		size_t findPos = nextLine.find(L"번 방 : ");
@@ -283,10 +315,35 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
 {
+	std::wstring nextLine;
+	for (;;)
+	{
+		size_t readSize{};
+		nextLine.clear();
+		if (false == UChattingClientInstance::GetNetManager()->PeekCmdLineIfHasLine(nextLine, readSize))
+		{
+			return;
+		}
 
+		UChattingClientInstance::GetNetManager()->MoveReadHeadAfterPeek(readSize);
+
+		ABLOG(Warning, "유저 이름 : %ws", nextLine.c_str());
+		size_t findPos = nextLine.find(TEXT("님."));
+		if (std::wstring::npos == findPos)
+		{
+			return;
+		}
+
+		ABLOG(Warning, "유저 맞음 : %ws", nextLine.c_str());
+
+		int32 nextLineLength = nextLine.size();
+		FString fst{ nextLine.c_str(), nextLineLength };
+
+		UChattingClientInstance::lobby->AddUserInfoInLobby(fst);
+	}
 }
 
-bool NetworkManager::ReadCmdLineIfHasCRLF(std::wstring& inStr)
+bool NetworkManager::ReadCmdLineIfHasCRLF(std::wstring& outStr)
 {
 	constexpr int CRLF_SIZE = 2;
 	char* b = recvBuffer.get_header();
@@ -302,11 +359,11 @@ bool NetworkManager::ReadCmdLineIfHasCRLF(std::wstring& inStr)
 
 	recvBuffer.move_read_head(retPos + CRLF_SIZE);
 
-	TCHAR buffer[1024]{};
+	wchar_t buffer[1024]{};
 	size_t wstr_size = mbstowcs(buffer, cmd.c_str(), 1024);
 
 	std::wstring cmd_w{ buffer , wstr_size };
-	inStr = cmd_w;
+	outStr = cmd_w;
 
 
 	return true;
@@ -337,9 +394,19 @@ bool NetworkManager::PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize
 	return true;
 }
 
-void NetworkManager::MoveReadHead(size_t readSize)
+void NetworkManager::MoveReadHeadAfterPeek(size_t readSize)
 {
 	recvBuffer.move_read_head(readSize);
+}
+
+ENetUserState NetworkManager::GetUserState()
+{
+	return userState;
+}
+
+void NetworkManager::SetUserState(ENetUserState state)
+{
+	userState = state;
 }
 
 void NetworkManager::ParsePayload()

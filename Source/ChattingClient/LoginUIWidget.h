@@ -52,7 +52,6 @@ public:
 	void AddChatMsg(const FString& fst);
 
 
-
 	UFUNCTION(BlueprintCallable, Category = "UMG")//  for test
-	static void AddChat(UPARAM(ref) FText& text);
+	static void AddChatInLobby(UPARAM(ref) FText& text);
 };

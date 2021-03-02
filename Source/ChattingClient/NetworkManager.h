@@ -25,6 +25,16 @@ enum ENetManagerState
 	ENMS_MAX
 };
 
+
+enum ENetUserState
+{
+	ENUS_None,
+	ENUS_Login,
+	ENUS_Lobby,
+	ENUS_Room,
+	ENUS_MAX
+};
+
 //UCLASS()
 class NetworkManager
 //class CHATTINGCLIENT_API ANetworkManager : public AActor
@@ -48,7 +58,6 @@ public:
 	void ParsePayload();
 
 	bool TryConnect();
-
 	bool Initialize();
 	bool Disconnect();
 
@@ -60,11 +69,13 @@ public:
 
 	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼에서 긁음.
 	bool PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize);
-	void MoveReadHead(size_t readSize);
+	void MoveReadHeadAfterPeek(size_t readSize);
+
+
+	ENetUserState GetUserState();
+	void SetUserState(ENetUserState state);
 
 	/*
-	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼 놔둠..
-	std::vector<std::wstring> PeekCmdLine(); 
 	*/
 	static void LoginPacketHandler(const std::wstring& cmd_w);
 	static void ChatPacketHandler(const std::wstring& cmd_w);
@@ -79,9 +90,10 @@ public:
 private:
 	using PacketHandlerMap = std::unordered_map<std::wstring, void(*)(const std::wstring&)>;
 
-	ENetManagerState		state;
+	ENetManagerState		netState;
 	FSocket*				sock;
 	payload_buffer<65536>	sendBuffer;
 	payload_buffer<65536>	recvBuffer;
 	PacketHandlerMap		packetHandlerMap;
+	ENetUserState			userState;
 };

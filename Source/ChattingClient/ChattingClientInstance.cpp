@@ -10,6 +10,7 @@ NetworkManager*				UChattingClientInstance::netManager			{};
 UChattingClientInstance*	UChattingClientInstance::instance			{};
 bool						UChattingClientInstance::inited				{ false };
 bool						UChattingClientInstance::initialized		{false};
+UChattingRoom*				UChattingClientInstance::room				{};
 UChattingLobby*				UChattingClientInstance::lobby				{};
 
 UChattingClientInstance::UChattingClientInstance()
@@ -57,6 +58,17 @@ UChattingLobby* UChattingClientInstance::GetLobby()
 	{
 		ABLOG(Warning, "Lobby");
 		return lobby;
+	}
+
+	return nullptr;
+}
+
+UChattingRoom* UChattingClientInstance::GetRoom()
+{
+	if (initialized == true)
+	{
+		ABLOG(Warning, "Room");
+		return room;
 	}
 
 	return nullptr;

@@ -125,11 +125,10 @@ void ULoginUIWidget::WhisperToUser(UPARAM(ref)FText& ftext_name, UPARAM(ref) FTe
 FString ULoginUIWidget::GetIDTextToFString(UPARAM(ref) FText& text)
 {
 
-
 	return text.ToString();
 }
 
-void ULoginUIWidget::AddChat(UPARAM(ref) FText& text)
+void ULoginUIWidget::AddChatInLobby(UPARAM(ref) FText& text)
 {
 	if (nullptr != UChattingClientInstance::GetLobby())
 	{
