@@ -2,8 +2,6 @@
 
 
 #include "LoginUIWidget.h"
-#include "Components/TextBlock.h"
-#include "Components/Button.h"
 #include "Blueprint/WidgetTree.h"
 #include "ChattingClientInstance.h"
 #include "NetworkManager.h"
@@ -12,27 +10,6 @@
 void ULoginUIWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	UChattingClientInstance::lobby = this;
-	UChattingClientInstance::initialized = false;
-	/*LoginBtn = WidgetTree->FindWidget<UButton>("LoginBtn");
-	LoginText = WidgetTree->FindWidget<UTextBlock>("LoginText");
-
-	if (LoginText != nullptr)
-	{
-		ABLOG(Warning, TEXT("LoginTxt != nullptr"));
-	}
-	else
-	{
-		ABLOG(Warning, TEXT("LoginTxt == nullptr"));
-	}*/
-	//UTextBlock* MyTitleTextBlock = this->WidgetTree->FindWidget<UTextBlock>("LoginTextBox");
-	//if (MyTitleTextBlock)
-	//{
-	//	FString str(TEXT("차지환"));
-	//	MyTitleTextBlock->SetText(FText::FromString(str));
-	//}
-
 }
 
 // 블루프린트로 글자 제한 함.
@@ -156,6 +133,6 @@ void ULoginUIWidget::AddChat(UPARAM(ref) FText& text)
 {
 	if (nullptr != UChattingClientInstance::GetLobby())
 	{
-		UChattingClientInstance::GetLobby()->AddChatMsg(text.ToString());
+		UChattingClientInstance::GetLobby()->AddChatMsgInLobby(text.ToString());
 	}
 }

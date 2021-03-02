@@ -6,6 +6,11 @@
 #include "ChattingClient.h"
 #include "Sockets.h"
 #include "Networking/Public/Networking.h"
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+
 #include "../ChattingClient/payload_ buffer.h"
 //#include "NetworkManager.generated.h"
 
@@ -47,9 +52,36 @@ public:
 	bool Initialize();
 	bool Disconnect();
 
+	void InitPacketHandler();
+
+	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼에서 긁음.
+	bool ReadCmdLineIfHasCRLF(std::wstring& fstr);
+
+
+	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼에서 긁음.
+	bool PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize);
+	void MoveReadHead(size_t readSize);
+
+	/*
+	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼 놔둠..
+	std::vector<std::wstring> PeekCmdLine(); 
+	*/
+	static void LoginPacketHandler(const std::wstring& cmd_w);
+	static void ChatPacketHandler(const std::wstring& cmd_w);
+	static void WhisperPacketHandler(const std::wstring& cmd_w);
+	static void CreateRoomPacketHandler(const std::wstring& cmd_w);
+	static void EnterRoomPacketHandler(const std::wstring& cmd_w);
+	static void LeaveRoomPacketHandler(const std::wstring& cmd_w);
+	static void SelectRoomListPacketHandler(const std::wstring& cmd_w);
+	static void SelectUserListInRoomPacketHandler(const std::wstring& cmd_w);
+	static void SelectUserListPacketHandler(const std::wstring& cmd_w);
+
+private:
+	using PacketHandlerMap = std::unordered_map<std::wstring, void(*)(const std::wstring&)>;
+
 	ENetManagerState		state;
 	FSocket*				sock;
 	payload_buffer<65536>	sendBuffer;
 	payload_buffer<65536>	recvBuffer;
-	//std::unordered_map<std::string, size_t(*)()> packetHandlerMap;
+	PacketHandlerMap		packetHandlerMap;
 };

@@ -19,13 +19,10 @@ public:
 	void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass); // Widget change function
 
 
-
-
-
-
 	//virtual void Tick(float DeltaTime) override final;
 protected:
 	virtual void BeginPlay() override final;
+	//virtual void EndPlay() override final;
 	virtual void Tick(float DeltaTime) override final;
 
 

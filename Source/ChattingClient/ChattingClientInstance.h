@@ -5,13 +5,14 @@
 #include "ChattingClient.h"
 #include "Kismet/BlueprintPlatformLibrary.h"
 #include "NetworkManager.h"
+#include "ChattingLobby.h"
 #include "ChattingClientInstance.generated.h"
 
 /**
  * 
  */
 
-//class NetworkManager;
+class UChattingLobby;
 class ULoginUIWidget;
 
 UCLASS()
@@ -25,16 +26,16 @@ public:
 	void Finalize();
 
 
-	static NetworkManager* GetNetManager();
-	static size_t RequestSending(char* buf, size_t size);
-	static void ChangeLevel(const FString& fstr);
-	static ULoginUIWidget*			GetLobby();
-	static ULoginUIWidget*			lobby;
-	static bool						initialized ;
+	static NetworkManager*			GetNetManager();
+	static size_t					RequestSending(char* buf, size_t size);
+	static void						ChangeLevel(const FString& fstr);
+	static UChattingLobby*			GetLobby();
+	static UChattingLobby*			lobby;
+	static bool						initialized;
 
 private:
-	static NetworkManager			netManager;
-	static UChattingClientInstance* instance;
-	static bool						inited;
+	static NetworkManager*				netManager;
+	static UChattingClientInstance*		instance;
+	static bool							inited;
 };
 

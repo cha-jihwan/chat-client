@@ -6,11 +6,11 @@
 #include "LoginUIWidget.h"
 
 
-NetworkManager				UChattingClientInstance::netManager			{};
+NetworkManager*				UChattingClientInstance::netManager			{};
 UChattingClientInstance*	UChattingClientInstance::instance			{};
 bool						UChattingClientInstance::inited				{ false };
 bool						UChattingClientInstance::initialized		{false};
-ULoginUIWidget*				UChattingClientInstance::lobby				{};
+UChattingLobby*				UChattingClientInstance::lobby				{};
 
 UChattingClientInstance::UChattingClientInstance()
 {
@@ -21,34 +21,29 @@ UChattingClientInstance::UChattingClientInstance()
 		Initialize();
 		inited = true;
 	}
-
-	
 }
 
 bool UChattingClientInstance::Initialize()
 {
-	{
-		//netManager = new NetworkManager();
-		
-	}
+	netManager = new NetworkManager();
 	
 	return false;
 }
 
 void UChattingClientInstance::Finalize()
 {
-	//delete netManager;
-	//netManager = nullptr;
+	delete netManager;
+	netManager = nullptr;
 }
 
 NetworkManager* UChattingClientInstance::GetNetManager()
 {
-	return &netManager;
+	return netManager;
 }
 
 size_t UChattingClientInstance::RequestSending(char* buf, size_t size)
 {
-	return netManager.PreSend(buf, size);
+	return netManager->PreSend(buf, size);
 }
 
 void UChattingClientInstance::ChangeLevel(const FString& levelName)
@@ -56,10 +51,11 @@ void UChattingClientInstance::ChangeLevel(const FString& levelName)
 	UGameplayStatics::OpenLevel(instance, *levelName);
 }
 
-ULoginUIWidget* UChattingClientInstance::GetLobby()
+UChattingLobby* UChattingClientInstance::GetLobby()
 {
 	if (initialized == true)
 	{
+		ABLOG(Warning, "Lobby");
 		return lobby;
 	}
 

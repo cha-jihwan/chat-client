@@ -23,11 +23,19 @@ void AChattingClientGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UChattingClientInstance* ins = (UChattingClientInstance*)GetGameInstance();
-	ins->Initialize();
+	//UChattingClientInstance* ins = (UChattingClientInstance*)GetGameInstance();
+	//ins->Initialize();
 
 	//ChangeMenuWidget(ULoginUIWidget::StaticClass());
 }
+
+//void AChattingClientGameMode::EndPlay()
+//{
+//	Super::EndPlay();
+//
+//
+//	//ChangeMenuWidget(ULoginUIWidget::StaticClass());
+//}
 
 void AChattingClientGameMode::Tick(float DeltaTime)
 {
