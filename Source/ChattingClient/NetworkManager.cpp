@@ -209,7 +209,7 @@ void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
 	FString fstr1 = L"LevelLobby";
 	UChattingClientInstance::ChangeLevel(fstr1);
 
-
+	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Lobby);
 
 }
 
@@ -310,7 +310,32 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w)
 {
+	std::wstring nextLine;
+	for (;;)
+	{
+		size_t readSize{};
+		nextLine.clear();
+		if (false == UChattingClientInstance::GetNetManager()->PeekCmdLineIfHasLine(nextLine, readSize))
+		{
+			return;
+		}
 
+		UChattingClientInstance::GetNetManager()->MoveReadHeadAfterPeek(readSize);
+
+		ABLOG(Warning, "유저 이름 : %ws", nextLine.c_str());
+		size_t findPos = nextLine.find(TEXT("님."));
+		if (std::wstring::npos == findPos)
+		{
+			return;
+		}
+
+		ABLOG(Warning, "유저 맞음 : %ws", nextLine.c_str());
+
+		int32 nextLineLength = nextLine.size();
+		FString fst{ nextLine.c_str(), nextLineLength };
+
+		UChattingClientInstance::room->AddUserInfoInRoom(fst);
+	}
 }
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)

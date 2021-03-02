@@ -8,8 +8,8 @@
 
 NetworkManager*				UChattingClientInstance::netManager			{};
 UChattingClientInstance*	UChattingClientInstance::instance			{};
-bool						UChattingClientInstance::inited				{ false };
-bool						UChattingClientInstance::initialized		{false};
+bool						UChattingClientInstance::inited				{};
+bool						UChattingClientInstance::initialized		{};
 UChattingRoom*				UChattingClientInstance::room				{};
 UChattingLobby*				UChattingClientInstance::lobby				{};
 
