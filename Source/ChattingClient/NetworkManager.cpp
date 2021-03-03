@@ -314,6 +314,9 @@ void NetworkManager::LeaveRoomPacketHandler(const std::wstring& cmd_w)
 void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 {
 	ABLOG_S(Warning);
+
+	UChattingClientInstance::lobby->ClearRoomInfoList();
+
 	std::wstring nextLine;
 	for(;;)
 	{
@@ -349,6 +352,9 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w)
 {
 	ABLOG_S(Warning);
+
+	UChattingClientInstance::room->ClearUserInfoList();
+
 	std::wstring nextLine;
 	for (;;)
 	{
@@ -380,6 +386,8 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
 {
 	ABLOG_S(Warning);
+
+	UChattingClientInstance::room->ClearUserInfoList();
 
 	std::wstring nextLine;
 	for (;;)
