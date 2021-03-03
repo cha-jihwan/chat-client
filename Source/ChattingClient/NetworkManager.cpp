@@ -117,7 +117,7 @@ int64 NetworkManager::TryRecvPayload()
 	
 			if (nullptr != UChattingClientInstance::GetLobby())
 			{
-				UChattingClientInstance::GetLobby()->AddChatMsgInLobby(L"z한z");
+				UChattingClientInstance::GetLobby()->AddChatMsgInLobby(L"z한z", true);
 			}
 
 			ParsePayload();
@@ -220,7 +220,7 @@ void NetworkManager::InitPacketHandler()
 	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_ROOM_EXITING_OK], NetworkManager::LeaveRoomPacketHandler);
 	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_ROOM_ENTERING_OK], NetworkManager::EnterRoomPacketHandler);
 	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_CHAT], NetworkManager::ChatPacketHandler);
-	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_WHISPER], NetworkManager::WhisperPacketHandler);
+	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_WHISPER], NetworkManager::ChatPacketHandler);
 	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_SELECT_ROOM_LIST], NetworkManager::SelectRoomListPacketHandler);
 	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_SELECT_USER_LIST], NetworkManager::SelectUserListPacketHandler);
 	packetHandlerMap.emplace(PacketFilterKeywords[(size_t)e_packet_filter::EPF_SELECT_USER_LIST_IN_ROOM], NetworkManager::SelectUserListInRoomPacketHandler);
@@ -238,7 +238,9 @@ void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
 		ABLOG_S(Error);
 	}
 
-	UChattingClientInstance::GetNetManager()->SetName(cmd_w.substr(0, findPos));
+	std::wstring newName = cmd_w.substr(0, findPos);
+
+	UChattingClientInstance::GetNetManager()->SetName(newName);
 
 	FString fstr = L"LevelLobby";
 
@@ -251,16 +253,26 @@ void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
 void NetworkManager::ChatPacketHandler(const std::wstring& cmd_w)
 {
 	ABLOG_S(Warning);
-	// user state
+
 	FString fst(cmd_w.c_str(), cmd_w.size());
+
+	bool isMine = false;
+	size_t findPos = cmd_w.find(UChattingClientInstance::GetNetManager()->GetName());
+	if (std::wstring::npos != findPos)
+	{
+		isMine = true;
+	}
+
+	//bool isMine = std::wstring::npos != cmd_w.find(UChattingClientInstance::GetNetManager()->GetName());
 
 	switch (UChattingClientInstance::GetNetManager()->GetUserState())
 	{
 	case ENetUserState::ENUS_Lobby:
-		UChattingClientInstance::lobby->AddChatMsgInLobby(fst);
+		
+		UChattingClientInstance::lobby->AddChatMsgInLobby(fst, isMine);
 		break;
 	case ENetUserState::ENUS_Room:
-		UChattingClientInstance::room->AddChatMsgInRoom(fst);
+		UChattingClientInstance::room->AddChatMsgInRoom(fst, isMine);
 		break;
 
 	default:
@@ -269,20 +281,24 @@ void NetworkManager::ChatPacketHandler(const std::wstring& cmd_w)
 }
 
 	
-void NetworkManager::WhisperPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::WhisperPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
-	FString fstr(cmd_w.c_str(), cmd_w.size());
+	FString fstr(cmdW.c_str(), cmdW.size());
 
 	UChattingClientInstance::GetNetManager()->GetUserState();
+
+	std::wstring extractedName = cmdW.substr(0, cmdW.size());
+
+	bool isMine = extractedName != UChattingClientInstance::GetNetManager()->GetName();
 
 	switch (UChattingClientInstance::GetNetManager()->GetUserState())
 	{
 	case ENetUserState::ENUS_Lobby: 
-		UChattingClientInstance::lobby->AddChatMsgInLobby(fstr);
+		UChattingClientInstance::lobby->AddChatMsgInLobby(fstr, isMine);
 		break;
 	case ENetUserState::ENUS_Room: 
-		UChattingClientInstance::room->AddChatMsgInRoom(fstr);
+		UChattingClientInstance::room->AddChatMsgInRoom(fstr, isMine);
 		break;
 
 	default:
@@ -395,9 +411,7 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
 {
-	ABLOG_S(Warning);
-
-	UChattingClientInstance::room->ClearUserInfoList();
+	UChattingClientInstance::lobby->ClearUserInfoList();
 
 	std::wstring nextLine;
 	for (;;)
@@ -425,6 +439,12 @@ void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
 
 		UChattingClientInstance::lobby->AddUserInfoInLobby(fst);
 	}
+
+	ABLOG(Warning, "OK");
+}
+
+void NetworkManager::CahttingCommonHnadler(const std::wstring& cmd_w)
+{
 }
 
 bool NetworkManager::ReadCmdLineIfHasCRLF(std::wstring& outStr)

@@ -89,7 +89,7 @@ public:
 	static void SelectRoomListPacketHandler(const std::wstring& cmd_w);
 	static void SelectUserListInRoomPacketHandler(const std::wstring& cmd_w);
 	static void SelectUserListPacketHandler(const std::wstring& cmd_w);
-
+	static void CahttingCommonHnadler(const std::wstring& cmd_w);
 private:
 	using PacketHandlerMap = std::unordered_map<std::wstring, void(*)(const std::wstring&)>;
 

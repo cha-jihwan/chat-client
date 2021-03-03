@@ -132,6 +132,6 @@ void ULoginUIWidget::AddChatInLobby(UPARAM(ref) FText& text)
 {
 	if (nullptr != UChattingClientInstance::GetLobby())
 	{
-		UChattingClientInstance::GetLobby()->AddChatMsgInLobby(text.ToString());
+		UChattingClientInstance::GetLobby()->AddChatMsgInLobby(text.ToString(), true);
 	}
 }

@@ -17,7 +17,7 @@ private:
 
 public:	
 	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
-	void AddChatMsgInLobby(const FString& fst);
+	void AddChatMsgInLobby(const FString& fst, bool isMine);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
 	void AddRoomInfoInLobby(const FString& fst);
