@@ -24,4 +24,10 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
 	void AddUserInfoInLobby(const FString& fst);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
+	void ClearUserInfoList();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
+	void ClearRoomInfoList();
 };
