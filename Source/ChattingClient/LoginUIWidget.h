@@ -47,6 +47,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UMG")//  for test
 	static void DoDisconnect();
 
+	
+	UFUNCTION(BlueprintCallable, Category = "UMG")
+	void BindIpAndPort(const FString& fst);
+
 
 	UFUNCTION(BlueprintCallable, Category = "UMG")// 
 	static FString GetIDTextToFString(UPARAM(ref) FText& text);

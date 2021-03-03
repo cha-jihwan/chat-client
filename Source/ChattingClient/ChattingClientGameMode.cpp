@@ -1,8 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ChattingClientGameMode.h"
-#include "ChattingClientHUD.h"
-#include "ChattingClientCharacter.h"
 #include "ChattingClientInstance.h"
 #include "NetworkManager.h"
 #include "UObject/ConstructorHelpers.h"

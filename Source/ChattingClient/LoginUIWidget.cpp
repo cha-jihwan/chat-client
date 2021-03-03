@@ -128,6 +128,10 @@ void ULoginUIWidget::DoDisconnect()
 	UChattingClientInstance::GetNetManager()->Disconnect();
 }
 
+void ULoginUIWidget::BindIpAndPort(const FString& fst)
+{
+}
+
 
 FString ULoginUIWidget::GetIDTextToFString(UPARAM(ref) FText& text)
 {

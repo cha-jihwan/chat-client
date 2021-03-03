@@ -30,4 +30,19 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
 	void ClearRoomInfoList();
+
+
+/// <summary>
+///  삭제 방지 코드.
+/// </summary>
+public:
+	virtual void RemoveFromParent() override;
+protected:
+	//@note: 생성자 안에서만 사용하는 함수입니다.
+	void SetEnableAutoDestroy(bool bInEnableAutoDestroy);
+public:
+	bool IsEnabledAutoDestroy()const;
+private:
+
+	bool bEnableAutoDestroy;
 };
