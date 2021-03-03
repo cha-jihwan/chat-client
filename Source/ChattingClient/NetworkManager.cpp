@@ -231,8 +231,18 @@ void NetworkManager::InitPacketHandler()
 void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
 {
 	ABLOG(Warning, "LoginPacketHandler");
-	FString fstr1 = L"LevelLobby";
-	UChattingClientInstance::ChangeLevel(fstr1);
+	
+	size_t findPos = cmd_w.find(TEXT("님"));
+	if(std::wstring::npos == findPos)
+	{
+		ABLOG_S(Error);
+	}
+
+	UChattingClientInstance::GetNetManager()->SetName(cmd_w.substr(0, findPos));
+
+	FString fstr = L"LevelLobby";
+
+	UChattingClientInstance::ChangeLevel(fstr);
 
 	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Lobby);
 
@@ -481,6 +491,18 @@ ENetUserState NetworkManager::GetUserState()
 void NetworkManager::SetUserState(ENetUserState state)
 {
 	userState = state;
+}
+
+void NetworkManager::SetName(std::wstring& newName)
+{
+	name = newName;
+
+	ABLOG(Warning, "SessionNmae : %ws", this->name.c_str());
+}
+
+const std::wstring& NetworkManager::GetName()
+{
+	return name;
 }
 
 void NetworkManager::ParsePayload()

@@ -75,6 +75,8 @@ public:
 
 	ENetUserState GetUserState();
 	void SetUserState(ENetUserState state);
+	void SetName(std::wstring& newName);
+	const std::wstring& GetName();
 
 	/*
 	*/
