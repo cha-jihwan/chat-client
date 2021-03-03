@@ -215,6 +215,7 @@ void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::ChatPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
 	// user state
 	FString fst(cmd_w.c_str(), cmd_w.size());
 
@@ -235,6 +236,7 @@ void NetworkManager::ChatPacketHandler(const std::wstring& cmd_w)
 	
 void NetworkManager::WhisperPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
 	FString fstr(cmd_w.c_str(), cmd_w.size());
 
 	UChattingClientInstance::GetNetManager()->GetUserState();
@@ -255,6 +257,8 @@ void NetworkManager::WhisperPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
+
 	FString roomLevel = L"LevelRoom";
 
 	UChattingClientInstance::ChangeLevel(roomLevel);
@@ -262,6 +266,8 @@ void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
+
 	FString roomLevel = L"LevelRoom";
 
 	UChattingClientInstance::ChangeLevel(roomLevel);
@@ -269,6 +275,7 @@ void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::LeaveRoomPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
 	FString lobbyLevel = L"LevelLobby";
 
 	UChattingClientInstance::ChangeLevel(lobbyLevel);
@@ -276,6 +283,7 @@ void NetworkManager::LeaveRoomPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
 	std::wstring nextLine;
 	for(;;)
 	{
@@ -310,6 +318,7 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 
 void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
 	std::wstring nextLine;
 	for (;;)
 	{
@@ -340,6 +349,8 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
 {
+	ABLOG_S(Warning);
+
 	std::wstring nextLine;
 	for (;;)
 	{
