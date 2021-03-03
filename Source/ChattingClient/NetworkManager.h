@@ -8,7 +8,8 @@
 #include "Networking/Public/Networking.h"
 
 #include <string>
-#include <vector>
+#include <cstdint>
+//#include <vector>
 #include <unordered_map>
 
 #include "../ChattingClient/payload_ buffer.h"
@@ -96,4 +97,7 @@ private:
 	payload_buffer<65536>	recvBuffer;
 	PacketHandlerMap		packetHandlerMap;
 	ENetUserState			userState;
+	std::wstring			name;
+	FString					ip;
+	uint16_t				port;
 };

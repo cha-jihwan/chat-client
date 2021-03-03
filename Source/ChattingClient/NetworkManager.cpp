@@ -47,7 +47,6 @@ bool NetworkManager::Disconnect()
 
 		return false;
 	}
-
 	sock->Shutdown(ESocketShutdownMode::Read);
 	sock = nullptr;
 	netState = ENMS_Disconnected;
@@ -86,6 +85,7 @@ void NetworkManager::OnTick(float DeltaTime)
 			break;
 
 		default:
+			ABLOG(Warning, "말도 안되는... 일이 일어남..");
 			break;
 	}
 }
@@ -139,9 +139,11 @@ int64 NetworkManager::TryRecvPayload()
 
 bool NetworkManager::TryConnect()
 {
-	FIPv4Address ip(127, 0, 0, 1);
+	FIPv4Address IPAddr;
+	FIPv4Address::Parse(TEXT("127.0.0.1"), IPAddr);
+
 	TSharedRef<FInternetAddr> addr = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();
-	addr->SetIp(ip.Value);
+	addr->SetIp(IPAddr.Value);
 	addr->SetPort(5500);
 
 	if (ENMS_Connecting < netState)
@@ -156,14 +158,37 @@ bool NetworkManager::TryConnect()
 	bool connected = sock->Connect(*addr);
 	if (connected)
 	{
-		netState = ENMS_Connected;
-		ABLOG(Warning, "ENMS_Connected");
-		
+		// 논 블로킹 소켓 커넥션 확인 방법.
+		// https://answers.unrealengine.com/questions/137371/how-can-i-check-socket-state.html
+
+		if (ESocketConnectionState::SCS_Connected == sock->GetConnectionState())
+		{
+			netState = ENMS_Connected;
+
+			ABLOG(Warning, "ENMS_Connected...");
+		}
+		else
+		{
+			ABLOG(Warning, "ENMS_PendingConnection...");
+		}
+
 		return true;
 	}
+	else // 연결중... 등 
+	{
+		if (ESocketConnectionState::SCS_Connected == sock->GetConnectionState())
+		{
+			netState = ENMS_Connected;
 
-	ABLOG(Warning, "TryConnect return false;");
-	return false;
+			ABLOG(Warning, "ENMS_Connected...");
+		}
+		else
+		{
+			ABLOG(Warning, "TryConnect return false;");
+		}
+
+		return false;
+	}
 }
 
 
