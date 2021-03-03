@@ -262,6 +262,9 @@ void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmd_w)
 	FString roomLevel = L"LevelRoom";
 
 	UChattingClientInstance::ChangeLevel(roomLevel);
+
+	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
+
 }
 
 void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmd_w)
@@ -271,6 +274,8 @@ void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmd_w)
 	FString roomLevel = L"LevelRoom";
 
 	UChattingClientInstance::ChangeLevel(roomLevel);
+
+	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
 }
 
 void NetworkManager::LeaveRoomPacketHandler(const std::wstring& cmd_w)
