@@ -75,8 +75,10 @@ public:
 
 	ENetUserState GetUserState();
 	void SetUserState(ENetUserState state);
-	void SetName(std::wstring& newName);
-	const std::wstring& GetName();
+	void SetUserName(std::wstring& newUserName);
+	void SetRoomName(std::wstring& newRoomName);
+	const std::wstring& GetUserName();
+	const std::wstring& GetRoomName();
 
 	/*
 	*/
@@ -99,7 +101,8 @@ private:
 	payload_buffer<65536>	recvBuffer;
 	PacketHandlerMap		packetHandlerMap;
 	ENetUserState			userState;
-	std::wstring			name;
+	std::wstring			userName;
+	std::wstring			roomName;
 	FString					ip;
 	uint16_t				port;
 };

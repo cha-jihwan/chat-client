@@ -5,7 +5,6 @@
 #include "ChattingClient.h"
 #include "Blueprint/UserWidget.h"
 
-
 #include "LoginUIWidget.generated.h"
 
 /**
@@ -45,13 +44,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UMG")//  for test
 	static void WhisperToUser(UPARAM(ref) FText& name, UPARAM(ref) FText& msg);
 
+	UFUNCTION(BlueprintCallable, Category = "UMG")//  for test
+	static void DoDisconnect();
+
+
 	UFUNCTION(BlueprintCallable, Category = "UMG")// 
 	static FString GetIDTextToFString(UPARAM(ref) FText& text);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
 	void AddChatMsg(const FString& fst);
 
-
 	UFUNCTION(BlueprintCallable, Category = "UMG")//  for test
 	static void AddChatInLobby(UPARAM(ref) FText& text);
+
+
+
 };

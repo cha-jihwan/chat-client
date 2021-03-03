@@ -27,6 +27,12 @@ bool NetworkManager::Initialize()
 	std::setlocale(LC_ALL, "Korean");
 
 	sock = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_Stream, TEXT("default"), false);
+	if (nullptr == sock)
+	{
+		ABLOG(Error, "Socket Creation Failure....");
+		return false;
+	}
+
 	sock->SetNonBlocking(true);
 
 	netState = ENMS_Connecting;
@@ -47,8 +53,13 @@ bool NetworkManager::Disconnect()
 
 		return false;
 	}
-	sock->Shutdown(ESocketShutdownMode::Read);
+
+	sock->Shutdown(ESocketShutdownMode::Write);
+	
+	sock->Close();
+
 	sock = nullptr;
+
 	netState = ENMS_Disconnected;
 
 	return true;
@@ -104,6 +115,12 @@ int64 NetworkManager::PreSend(char* buffer, int64 size)
 
 int64 NetworkManager::TryRecvPayload()
 {
+	if (nullptr == sock)
+	{
+		ABLOG(Warning, "socket already disconncted....");
+		return 0;
+	}
+
 	int32 receivedBytes = 0;
 	
 	bool isSuccess = sock->Recv((uint8*)recvBuffer.get_write_buffer(), recvBuffer.get_buffer_size(), receivedBytes);
@@ -139,6 +156,13 @@ int64 NetworkManager::TryRecvPayload()
 
 bool NetworkManager::TryConnect()
 {
+	if (nullptr == sock)
+	{
+		ABLOG(Warning, "socket already disconncted....");
+		return 0;
+	}
+
+
 	FIPv4Address IPAddr;
 	FIPv4Address::Parse(TEXT("127.0.0.1"), IPAddr);
 
@@ -159,8 +183,7 @@ bool NetworkManager::TryConnect()
 	if (connected)
 	{
 		// 논 블로킹 소켓 커넥션 확인 방법.
-		// https://answers.unrealengine.com/questions/137371/how-can-i-check-socket-state.html
-
+		// reference : https://answers.unrealengine.com/questions/137371/how-can-i-check-socket-state.html
 		if (ESocketConnectionState::SCS_Connected == sock->GetConnectionState())
 		{
 			netState = ENMS_Connected;
@@ -194,6 +217,13 @@ bool NetworkManager::TryConnect()
 
 int64 NetworkManager::TrySendPayload()
 {
+	if (nullptr == sock)
+	{
+		ABLOG(Warning, "socket already disconncted....");
+		return 0;
+	}
+
+
 	int sentBytes = 0;
 
 	if (0 < sendBuffer.get_use_size())
@@ -228,42 +258,41 @@ void NetworkManager::InitPacketHandler()
 
 
 
-void NetworkManager::LoginPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::LoginPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG(Warning, "LoginPacketHandler");
 	
-	size_t findPos = cmd_w.find(TEXT("님"));
+	size_t findPos = cmdW.find(TEXT("님"));
 	if(std::wstring::npos == findPos)
 	{
 		ABLOG_S(Error);
 	}
 
-	std::wstring newName = cmd_w.substr(0, findPos);
+	std::wstring newName = cmdW.substr(0, findPos);
 
-	UChattingClientInstance::GetNetManager()->SetName(newName);
+	UChattingClientInstance::GetNetManager()->SetUserName(newName);
 
 	FString fstr = L"LevelLobby";
 
 	UChattingClientInstance::ChangeLevel(fstr);
 
 	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Lobby);
-
 }
 
-void NetworkManager::ChatPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::ChatPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
 
-	FString fst(cmd_w.c_str(), cmd_w.size());
+	FString fst(cmdW.c_str(), cmdW.size());
 
 	bool isMine = false;
-	size_t findPos = cmd_w.find(UChattingClientInstance::GetNetManager()->GetName());
+	size_t findPos = cmdW.find(UChattingClientInstance::GetNetManager()->GetUserName());
 	if (std::wstring::npos != findPos)
 	{
 		isMine = true;
 	}
 
-	//bool isMine = std::wstring::npos != cmd_w.find(UChattingClientInstance::GetNetManager()->GetName());
+	//bool isMine = std::wstring::npos != cmdW.find(UChattingClientInstance::GetNetManager()->GetName());
 
 	switch (UChattingClientInstance::GetNetManager()->GetUserState())
 	{
@@ -290,7 +319,7 @@ void NetworkManager::WhisperPacketHandler(const std::wstring& cmdW)
 
 	std::wstring extractedName = cmdW.substr(0, cmdW.size());
 
-	bool isMine = extractedName != UChattingClientInstance::GetNetManager()->GetName();
+	bool isMine = extractedName != UChattingClientInstance::GetNetManager()->GetUserName();
 
 	switch (UChattingClientInstance::GetNetManager()->GetUserState())
 	{
@@ -306,8 +335,10 @@ void NetworkManager::WhisperPacketHandler(const std::wstring& cmdW)
 	}
 }
 
-void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmdW)
 {
+	constexpr size_t keywordSize = (sizeof(L"번 방 : ") - sizeof(L'\0')) / 2;
+
 	ABLOG_S(Warning);
 
 	FString roomLevel = L"LevelRoom";
@@ -316,10 +347,23 @@ void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmd_w)
 
 	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
 
+	size_t findPos = cmdW.find(L"번 방 : ");
+	std::wstring roomName = cmdW.substr(findPos + keywordSize);
+
+	UChattingClientInstance::GetNetManager()->SetRoomName(roomName);
+
 }
 
-void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmd_w)
+/*
+텍스트 형식 :
+전체 방 목록
+1번 방 : ew
+
+*/
+void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmdW)
 {
+	constexpr size_t keywordSize = (sizeof(L"번 방 : ") - sizeof(L'\0'))/2;
+
 	ABLOG_S(Warning);
 
 	FString roomLevel = L"LevelRoom";
@@ -327,17 +371,23 @@ void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmd_w)
 	UChattingClientInstance::ChangeLevel(roomLevel);
 
 	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
+
+	size_t findPos = cmdW.find(L"번 방 : ");
+	std::wstring roomName = cmdW.substr(findPos + keywordSize); 
+
+	UChattingClientInstance::GetNetManager()->SetRoomName(roomName);
 }
 
-void NetworkManager::LeaveRoomPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::LeaveRoomPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
+
 	FString lobbyLevel = L"LevelLobby";
 
 	UChattingClientInstance::ChangeLevel(lobbyLevel);
 }
 
-void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
 
@@ -375,7 +425,7 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmd_w)
 	
 	
 
-void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
 
@@ -409,7 +459,7 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmd_w
 	}
 }
 
-void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
+void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmdW)
 {
 	UChattingClientInstance::lobby->ClearUserInfoList();
 
@@ -443,7 +493,7 @@ void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmd_w)
 	ABLOG(Warning, "OK");
 }
 
-void NetworkManager::CahttingCommonHnadler(const std::wstring& cmd_w)
+void NetworkManager::CahttingCommonHnadler(const std::wstring& cmdW)
 {
 }
 
@@ -466,8 +516,8 @@ bool NetworkManager::ReadCmdLineIfHasCRLF(std::wstring& outStr)
 	wchar_t buffer[1024]{};
 	size_t wstr_size = mbstowcs(buffer, cmd.c_str(), 1024);
 
-	std::wstring cmd_w{ buffer , wstr_size };
-	outStr = cmd_w;
+	std::wstring cmdW{ buffer , wstr_size };
+	outStr = cmdW;
 
 
 	return true;
@@ -492,8 +542,8 @@ bool NetworkManager::PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize
 	TCHAR buffer[1024]{};
 	size_t wstr_size = mbstowcs(buffer, cmd.c_str(), 1024);
 	
-	std::wstring cmd_w{ buffer , wstr_size };
-	outStr = std::move(cmd_w);
+	std::wstring cmdW{ buffer , wstr_size };
+	outStr = std::move(cmdW);
 
 	return true;
 }
@@ -513,41 +563,52 @@ void NetworkManager::SetUserState(ENetUserState state)
 	userState = state;
 }
 
-void NetworkManager::SetName(std::wstring& newName)
+void NetworkManager::SetUserName(std::wstring& newName)
 {
-	name = newName;
+	userName = newName;
 
-	ABLOG(Warning, "SessionNmae : %ws", this->name.c_str());
+	ABLOG(Warning, "SessionNmae : %ws", this->userName.c_str());
 }
 
-const std::wstring& NetworkManager::GetName()
+void NetworkManager::SetRoomName(std::wstring& newName)
 {
-	return name;
+	roomName = newName;
+
+	ABLOG(Warning, "RoomNmae : %ws", this->roomName.c_str());
+}
+
+const std::wstring& NetworkManager::GetUserName()
+{
+	return userName;
+}
+
+const std::wstring& NetworkManager::GetRoomName()
+{
+	return roomName;
 }
 
 void NetworkManager::ParsePayload()
 {
-	std::wstring cmd_w;
+	std::wstring cmdW;
 	for (;;)
 	{
-		cmd_w.clear();
+		cmdW.clear();
 		// "\r\n" 단위로 끊어서 wstring 얻어오기.
-		if (false == ReadCmdLineIfHasCRLF(cmd_w))
+		if (false == ReadCmdLineIfHasCRLF(cmdW))
 		{
 			return;
 		}
 
-		ABLOG(Warning, "%ws", cmd_w.c_str());
+		ABLOG(Warning, "%ws", cmdW.c_str());
 
 		// 패킷 필터링...
 		for (const auto& keyword : PacketFilterKeywords)
 		{
 			// 해당하는 경우...
-
-			size_t pos = cmd_w.find(keyword);
+			size_t pos = cmdW.find(keyword);
 			if (std::wstring::npos != pos) 
 			{
-				packetHandlerMap[keyword](cmd_w);
+				packetHandlerMap[keyword](cmdW);
 			}
 		}
 	}
