@@ -7,8 +7,8 @@ const std::wstring PacketFilterKeywords[9] =
 {
 	L"로그인 성공",
 	L"방 생성 성공",
-	L"방 탈출 성공",
-	L"방 참가 성공",
+	L"방 퇴장 성공",
+	L"방 입장 성공",
 	L"님의 채팅 : ",
 	L"님의 귓속말 : ",
 	L"전체 방 목록",
