@@ -67,11 +67,9 @@ public:
 	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼에서 긁음.
 	bool ReadCmdLineIfHasCRLF(std::wstring& fstr);
 
-
 	/// \r\n 단위로 끊어서 리턴 없다면 ""빈 string 리턴 버퍼에서 긁음.
 	bool PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize);
 	void MoveReadHeadAfterPeek(size_t readSize);
-
 
 	ENetUserState GetUserState();
 	void SetUserState(ENetUserState state);
@@ -92,6 +90,7 @@ public:
 	static void SelectUserListInRoomPacketHandler(const std::wstring& cmd_w);
 	static void SelectUserListPacketHandler(const std::wstring& cmd_w);
 	static void CahttingCommonHnadler(const std::wstring& cmd_w);
+
 private:
 	using PacketHandlerMap = std::unordered_map<std::wstring, void(*)(const std::wstring&)>;
 

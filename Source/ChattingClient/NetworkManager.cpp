@@ -461,7 +461,10 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmdW)
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmdW)
 {
+
+	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingClientInstance::lobby);
 	UChattingClientInstance::lobby->ClearUserInfoList();
+	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingClientInstance::lobby);
 
 	std::wstring nextLine;
 	for (;;)
