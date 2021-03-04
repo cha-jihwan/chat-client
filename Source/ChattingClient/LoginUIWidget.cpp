@@ -4,6 +4,7 @@
 #include "LoginUIWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "ChattingClientInstance.h"
+#include "NetFunction.h"
 #include "NetworkManager.h"
 #include "ChattingLevel.h"
 #include <string>
@@ -17,12 +18,14 @@ void ULoginUIWidget::NativeConstruct()
 void ULoginUIWidget::DoLogin(UPARAM(ref) FText& ftext)
 {
 	FString fstr = ftext.ToString();
-	char buffer[1024]{};
+	//char buffer[1024]{};
+	/*size_t retSize = std::wcstombs(buffer, *fstr, 1024);*/
 
-	size_t retSize = std::wcstombs(buffer, *fstr, 1024);
+	std::wstring	wText(*fstr, fstr.Len());
+	std::string		text = WcsToMbs(wText);
 
 	std::string loginCmd = "/l ";
-	loginCmd += buffer;
+	loginCmd += text;
 	loginCmd += "\r\n";
 
 	UChattingClientInstance::RequestSending(const_cast<char*>(loginCmd.c_str()), loginCmd.size());
@@ -36,12 +39,15 @@ void ULoginUIWidget::DoLogin(UPARAM(ref) FText& ftext)
 void ULoginUIWidget::DoChat(UPARAM(ref) FText& ftext)
 {
 	FString fstr = ftext.ToString();
-	char buffer[1024]{};
-	
-	size_t retSize = std::wcstombs(buffer, *fstr, 1024);
+	//char buffer[1024]{};
+
+	std::wstring	wText(*fstr, fstr.Len());
+	std::string		text = WcsToMbs(wText);
+
+	//size_t retSize = std::wcstombs(buffer, *fstr, 1024);
 
 	std::string chatCmd = "/c ";
-	chatCmd += buffer;
+	chatCmd += text;
 	chatCmd += "\r\n";
 
 	UChattingClientInstance::GetNetManager()->PreSend(const_cast<char*>(chatCmd.c_str()), chatCmd.size());
@@ -55,12 +61,16 @@ void ULoginUIWidget::CreateRoom(UPARAM(ref) FText& ftext)
 	std::wstring roomName(*fstr, fstr.Len());
 	UChattingClientInstance::GetNetManager()->SetRoomName(roomName);
 
-	char buffer[1024]{};
 
-	size_t retSize = std::wcstombs(buffer, *fstr, 1024);
+	std::string		text = WcsToMbs(roomName);
+
+
+	//char buffer[1024]{};
+
+	//size_t retSize = std::wcstombs(buffer, *fstr, 1024);
 
 	std::string createRoomCmd = "/r ";
-	createRoomCmd += buffer;
+	createRoomCmd += text;
 	createRoomCmd += "\r\n";
 
 	UChattingClientInstance::GetNetManager()->PreSend(const_cast<char*>(createRoomCmd.c_str()), createRoomCmd.size());
@@ -72,12 +82,10 @@ void ULoginUIWidget::EnterRoom(UPARAM(ref) FText& ftext)
 	std::wstring roomName(*fstr, fstr.Len());
 	UChattingClientInstance::GetNetManager()->SetRoomName(roomName);
 
-	char buffer[1024]{};
-	
-	size_t retSize = std::wcstombs(buffer, *fstr, 1024);
+	std::string		text = WcsToMbs(roomName);
 
 	std::string enterRoomCmd = "/q ";
-	enterRoomCmd += buffer;
+	enterRoomCmd += text;
 	enterRoomCmd += "\r\n";
 
 	UChattingClientInstance::GetNetManager()->PreSend(const_cast<char*>(enterRoomCmd.c_str()), enterRoomCmd.size());
@@ -115,7 +123,11 @@ void ULoginUIWidget::WhisperToUser(UPARAM(ref)FText& ftext_name, UPARAM(ref) FTe
 {
 	char buffer[1024]{};
 	FString fstr = ftext_name.ToString() + " " + ftext_msg.ToString();
-	size_t retSize = std::wcstombs(buffer, *fstr, 1024);
+	//size_t retSize = std::wcstombs(buffer, *fstr, 1024);
+
+	std::wstring wStr(*fstr, fstr.Len());
+	std::string textName = WcsToMbs(wStr);
+
 
 	std::string whisperToUserCmd = "/w ";
 	whisperToUserCmd += buffer;

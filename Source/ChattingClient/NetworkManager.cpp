@@ -9,6 +9,7 @@
 #include "ChattingClientInstance.h"
 #include "ChattingLevel.h"
 #include "LoginUIWidget.h"
+#include "NetFunction.h"
 //#include <codecvt>
 #include <stdlib.h>
 #include <clocale>
@@ -25,7 +26,7 @@ NetworkManager::NetworkManager()
 
 bool NetworkManager::Initialize()
 {
-	std::setlocale(LC_ALL, "Korean");
+	//std::setlocale(LC_ALL, "Korean");
 
 	sock = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateSocket(NAME_Stream, TEXT("default"), false);
 	if (nullptr == sock)
@@ -516,10 +517,14 @@ bool NetworkManager::ReadCmdLineIfHasCRLF(std::wstring& outStr)
 
 	recvBuffer.move_read_head(retPos + CRLF_SIZE);
 
+	/*
 	wchar_t buffer[1024]{};
 	size_t wstr_size = mbstowcs(buffer, cmd.c_str(), 1024);
+	*/
 
-	std::wstring cmdW{ buffer , wstr_size };
+	std::wstring cmdW = MbsToWcs(cmd);
+
+	//std::wstring cmdW{ buffer , wstr_size };
 	outStr = cmdW;
 
 
@@ -542,14 +547,15 @@ bool NetworkManager::PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize
 
 	readSize = retPos + CRLF_SIZE;
 
-	TCHAR buffer[1024]{};
-	size_t wstrSize = mbstowcs(buffer, cmd.c_str(), 1024);
+	//TCHAR buffer[1024]{};
+	//size_t wstrSize = mbstowcs(buffer, cmd.c_str(), 1024);
+	std::wstring cmdW = MbsToWcs(cmd);
 	//if (((size_t)-1) == wstrSize) // NULL 문자 존재 비워야 한다.
 	//{
 	//	return false;
 	//}
 
-	std::wstring cmdW {buffer , wstrSize};
+	//std::wstring cmdW {buffer , wstrSize};
 	outStr = std::move(cmdW);
 
 	return true;
@@ -559,8 +565,6 @@ void NetworkManager::MoveReadHeadAfterPeek(size_t readSize)
 {
 	recvBuffer.move_read_head(readSize);
 }
-
-
 
 
 
