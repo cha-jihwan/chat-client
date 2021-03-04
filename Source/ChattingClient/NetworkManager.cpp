@@ -7,6 +7,7 @@
 #include "ContentTexts.h"
 #include "ChattingClientGameMode.h"
 #include "ChattingClientInstance.h"
+#include "ChattingLevel.h"
 #include "LoginUIWidget.h"
 //#include <codecvt>
 #include <stdlib.h>
@@ -132,10 +133,10 @@ int64 NetworkManager::TryRecvPayload()
 		{
 			ABLOG(Warning, "recved bytes : %d", receivedBytes);
 	
-			if (nullptr != UChattingClientInstance::GetLobby())
-			{
-				UChattingClientInstance::GetLobby()->AddChatMsgInLobby(L"z한z", true);
-			}
+			//if (nullptr != UChattingLevel::GetLevel())
+			//{
+			//	UChattingLevel::GetLevel()->AddChatMsgInLobby(L"z한z", true);
+			//}
 
 			ParsePayload();
 		}
@@ -276,7 +277,9 @@ void NetworkManager::LoginPacketHandler(const std::wstring& cmdW)
 
 	UChattingClientInstance::ChangeLevel(fstr);
 
-	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Lobby);
+
+	ABLOG_S(Warning);
+	//UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Lobby);
 }
 
 void NetworkManager::ChatPacketHandler(const std::wstring& cmdW)
@@ -294,18 +297,17 @@ void NetworkManager::ChatPacketHandler(const std::wstring& cmdW)
 
 	//bool isMine = std::wstring::npos != cmdW.find(UChattingClientInstance::GetNetManager()->GetName());
 
-	switch (UChattingClientInstance::GetNetManager()->GetUserState())
+	switch (UChattingLevel::GetLevel()->GetState())
 	{
-	case ENetUserState::ENUS_Lobby:
-		
-		UChattingClientInstance::lobby->AddChatMsgInLobby(fst, isMine);
+	case E_LevelState::ELS_LOBBY:
+		UChattingLevel::GetLevel()->AddChatMsgInLobby(fst, isMine);
 		break;
-	case ENetUserState::ENUS_Room:
-		UChattingClientInstance::room->AddChatMsgInRoom(fst, isMine);
+	case E_LevelState::ELS_ROOM:
+		UChattingLevel::GetLevel()->AddChatMsgInRoom(fst, isMine);
 		break;
 
 	default:
-		ABLOG(Warning, "NetUserState %d  In ChatHandler", UChattingClientInstance::GetNetManager()->GetUserState())
+		ABLOG(Warning, "NetUserState %d  In ChatHandler", UChattingLevel::GetLevel()->GetState());
 	}
 }
 
@@ -315,23 +317,23 @@ void NetworkManager::WhisperPacketHandler(const std::wstring& cmdW)
 	ABLOG_S(Warning);
 	FString fstr(cmdW.c_str(), cmdW.size());
 
-	UChattingClientInstance::GetNetManager()->GetUserState();
+	//UChattingClientInstance::GetNetManager()->GetUserState();
 
 	std::wstring extractedName = cmdW.substr(0, cmdW.size());
 
 	bool isMine = extractedName != UChattingClientInstance::GetNetManager()->GetUserName();
 
-	switch (UChattingClientInstance::GetNetManager()->GetUserState())
+	switch (UChattingLevel::GetLevel()->GetState())
 	{
-	case ENetUserState::ENUS_Lobby: 
-		UChattingClientInstance::lobby->AddChatMsgInLobby(fstr, isMine);
+	case E_LevelState::ELS_LOBBY: 
+		UChattingLevel::GetLevel()->AddChatMsgInLobby(fstr, isMine);
 		break;
-	case ENetUserState::ENUS_Room: 
-		UChattingClientInstance::room->AddChatMsgInRoom(fstr, isMine);
+	case E_LevelState::ELS_ROOM:
+		UChattingLevel::GetLevel()->AddChatMsgInRoom(fstr, isMine);
 		break;
 
 	default:
-		ABLOG(Warning, "NetUserState %d  In Whisper",UChattingClientInstance::GetNetManager()->GetUserState())
+		ABLOG(Warning, "NetUserState %d  In Whisper", UChattingLevel::GetLevel()->GetState());
 	}
 }
 
@@ -345,7 +347,7 @@ void NetworkManager::CreateRoomPacketHandler(const std::wstring& cmdW)
 
 	UChattingClientInstance::ChangeLevel(roomLevel);
 
-	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
+	//UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
 
 	size_t findPos = cmdW.find(L"번 방 : ");
 	std::wstring roomName = cmdW.substr(findPos + keywordSize);
@@ -370,7 +372,7 @@ void NetworkManager::EnterRoomPacketHandler(const std::wstring& cmdW)
 
 	UChattingClientInstance::ChangeLevel(roomLevel);
 
-	UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
+	//UChattingClientInstance::GetNetManager()->SetUserState(ENUS_Room);
 
 	size_t findPos = cmdW.find(L"번 방 : ");
 	std::wstring roomName = cmdW.substr(findPos + keywordSize); 
@@ -391,7 +393,7 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
 
-	UChattingClientInstance::lobby->ClearRoomInfoList();
+	UChattingLevel::GetLevel()->ClearRoomInfoList();
 
 	std::wstring nextLine;
 	for(;;)
@@ -417,7 +419,7 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmdW)
 		int32 nextLineLength = nextLine.size();
 		FString fst{ nextLine.c_str(), nextLineLength };
 
-		UChattingClientInstance::lobby->AddRoomInfoInLobby(fst);
+		UChattingLevel::GetLevel()->AddRoomInfoInLobby(fst);
 	}
 
 }
@@ -429,7 +431,7 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmdW)
 {
 	ABLOG_S(Warning);
 
-	UChattingClientInstance::room->ClearUserInfoList();
+	UChattingLevel::GetLevel()->ClearUserInfoListInRoom();
 
 	std::wstring nextLine;
 	for (;;)
@@ -455,16 +457,16 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmdW)
 		int32 nextLineLength = nextLine.size();
 		FString fst{ nextLine.c_str(), nextLineLength };
 
-		UChattingClientInstance::room->AddUserInfoInRoom(fst);
+		UChattingLevel::GetLevel()->AddUserInfoInRoom(fst);
 	}
 }
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmdW)
 {
 
-	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingClientInstance::lobby);
-	UChattingClientInstance::lobby->ClearUserInfoList();
-	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingClientInstance::lobby);
+	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingLevel::GetLevel());
+	UChattingLevel::GetLevel()->ClearUserInfoListInLobby();
+	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingLevel::GetLevel());
 
 	std::wstring nextLine;
 	for (;;)
@@ -490,7 +492,7 @@ void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmdW)
 		int32 nextLineLength = nextLine.size();
 		FString fst{ nextLine.c_str(), nextLineLength };
 
-		UChattingClientInstance::lobby->AddUserInfoInLobby(fst);
+		UChattingLevel::GetLevel()->AddUserInfoInLobby(fst);
 	}
 
 	ABLOG(Warning, "OK");
@@ -556,15 +558,9 @@ void NetworkManager::MoveReadHeadAfterPeek(size_t readSize)
 	recvBuffer.move_read_head(readSize);
 }
 
-ENetUserState NetworkManager::GetUserState()
-{
-	return userState;
-}
 
-void NetworkManager::SetUserState(ENetUserState state)
-{
-	userState = state;
-}
+
+
 
 void NetworkManager::SetUserName(std::wstring& newName)
 {

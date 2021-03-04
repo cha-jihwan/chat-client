@@ -18,12 +18,12 @@ private:
 	virtual void NativeConstruct() override final;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
-	void AddChatMsgInRoom(const FString& fst, bool isMine);
+	//UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
+	//void AddChatMsgInRoom(const FString& fst, bool isMine);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
-	void AddUserInfoInRoom(const FString& fst);
+	//UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
+	//void AddUserInfoInRoom(const FString& fst);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
-	void ClearUserInfoList();
+	//UFUNCTION(BlueprintImplementableEvent, Category = "UMG")
+	//void ClearUserInfoList();
 };

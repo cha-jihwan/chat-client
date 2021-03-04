@@ -5,6 +5,7 @@
 #include "Blueprint/WidgetTree.h"
 #include "ChattingClientInstance.h"
 #include "NetworkManager.h"
+#include "ChattingLevel.h"
 #include <string>
 
 void ULoginUIWidget::NativeConstruct()
@@ -131,14 +132,13 @@ void ULoginUIWidget::DoDisconnect()
 
 FString ULoginUIWidget::GetIDTextToFString(UPARAM(ref) FText& text)
 {
-
 	return text.ToString();
 }
 
 void ULoginUIWidget::AddChatInLobby(UPARAM(ref) FText& text)
 {
-	if (nullptr != UChattingClientInstance::GetLobby())
+	if (nullptr != UChattingLevel::GetLevel())
 	{
-		UChattingClientInstance::GetLobby()->AddChatMsgInLobby(text.ToString(), true);
+		UChattingLevel::GetLevel()->AddChatMsgInLobby(text.ToString(), true);
 	}
 }

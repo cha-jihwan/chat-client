@@ -71,8 +71,7 @@ public:
 	bool PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize);
 	void MoveReadHeadAfterPeek(size_t readSize);
 
-	ENetUserState GetUserState();
-	void SetUserState(ENetUserState state);
+	//ENetUserState GetUserState();
 	void SetUserName(std::wstring& newUserName);
 	void SetRoomName(std::wstring& newRoomName);
 	const std::wstring& GetUserName();

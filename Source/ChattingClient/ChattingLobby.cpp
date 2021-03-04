@@ -3,13 +3,17 @@
 #include "ChattingClientInstance.h"
 
 
+//UChattingLobby::UChattingLobby() 
+//{
+//	ABLOG_S(Warning);
+//}
+
 // Sets default values
 void UChattingLobby::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	UChattingClientInstance::lobby = this;
-	ABLOG(Warning, "void UChattingLobby::NativeConstruct() %p", (void*)this);
+	//ABLOG(Warning, "void UChattingLobby::NativeConstruct() %p", (void*)this);
 }
 
 

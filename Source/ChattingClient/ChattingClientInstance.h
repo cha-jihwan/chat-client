@@ -30,11 +30,7 @@ public:
 	static NetworkManager*			GetNetManager();
 	static size_t					RequestSending(char* buf, size_t size);
 	static void						ChangeLevel(const FString& fstr);
-	static UChattingLobby*			GetLobby();
-	static UChattingLobby*			lobby;
 	static bool						initialized;
-	static UChattingRoom*			GetRoom();
-	static UChattingRoom*			room;
 
 private:
 	static NetworkManager*				netManager;
