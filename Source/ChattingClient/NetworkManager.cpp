@@ -413,7 +413,6 @@ void NetworkManager::SelectRoomListPacketHandler(const std::wstring& cmdW)
 		{
 			return;
 		}
-		ABLOG(Warning, "방 찾음 : %ws", nextLine.c_str());
 
 
 		int32 nextLineLength = nextLine.size();
@@ -463,7 +462,6 @@ void NetworkManager::SelectUserListInRoomPacketHandler(const std::wstring& cmdW)
 
 void NetworkManager::SelectUserListPacketHandler(const std::wstring& cmdW)
 {
-
 	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingLevel::GetLevel());
 	UChattingLevel::GetLevel()->ClearUserInfoListInLobby();
 	ABLOG(Warning, "SelectUserListPacketHandler %p", (void*)UChattingLevel::GetLevel());
@@ -545,9 +543,13 @@ bool NetworkManager::PeekCmdLineIfHasLine(std::wstring& outStr, size_t& readSize
 	readSize = retPos + CRLF_SIZE;
 
 	TCHAR buffer[1024]{};
-	size_t wstr_size = mbstowcs(buffer, cmd.c_str(), 1024);
-	
-	std::wstring cmdW{ buffer , wstr_size };
+	size_t wstrSize = mbstowcs(buffer, cmd.c_str(), 1024);
+	//if (((size_t)-1) == wstrSize) // NULL 문자 존재 비워야 한다.
+	//{
+	//	return false;
+	//}
+
+	std::wstring cmdW {buffer , wstrSize};
 	outStr = std::move(cmdW);
 
 	return true;
